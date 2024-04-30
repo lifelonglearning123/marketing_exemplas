@@ -13,13 +13,18 @@ def update_check_file_with_master_data(master, check):
     return check
 
 def update_check_file_with_master_reg(master, check):
-    # Create a dictionary from the master file with company names as keys and 'Account Partner' values as values.
+    # Ensure 'Company Registration Number' columns in both dataframes are strings
+    master['Company Registration Number'] = master['Company Registration Number'].astype(str)
+    check['Company Registration Number'] = check['Company Registration Number'].astype(str)
+
+    # Create a dictionary from the master file with company registration numbers as keys and 'Account Partner' values as values
     company_data = pd.Series(master['Account Partner'].values, index=master['Company Registration Number']).to_dict()
     
-    # Update check file based on registration number.
+    # Update the check file based on registration number, assigning 'Account Partner' from master or 'Safe' if no match is found
     check['Reg Compare'] = check['Company Registration Number'].apply(lambda x: company_data.get(x, 'Safe'))
 
     return check
+
 
 def main():
     st.title('Telesales Data')
