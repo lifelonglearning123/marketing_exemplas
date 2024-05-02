@@ -47,7 +47,7 @@ def update_check_with_combined_status(check):
     return check
 
 def main():
-    st.title('Telesales Data')
+    st.title('Telesales Data -Dual Check')
     st.write("Please upload the master file and the check file.")
 
     uploaded_master_file = st.file_uploader("Upload master data sheet", key="master", type=['xlsx'])
