@@ -1,30 +1,50 @@
-#Checks data from data agency against master database
-
 import streamlit as st
 import pandas as pd
 
-def update_check_file_with_master_data(master, check):
-    # Create a dictionary from the master file with company names as keys and 'Account Partner' values as values.
-    company_data = pd.Series(master['Account Partner'].values, index=master['Name']).to_dict()
+def clean_company_name(name):
+    if not isinstance(name, str):
+        return ""
     
-    # Update check file: Copy value from 'Account Partner' of master file if company exists, else 'Safe'.
-    check['Updated Column B'] = check['Name'].apply(lambda x: company_data.get(x, 'Safe'))
+    name = name.lower().strip()
+    
+    if name.endswith(" ltd"):
+        name = name[:-4]
+    elif name.endswith(" limited"):
+        name = name[:-8]
+
+    return name.strip()
+
+def update_check_file_with_master_data(master, check):
+    master['Cleaned Name'] = master['Name'].apply(clean_company_name)
+    company_data = pd.Series(master['Account Partner'].values, index=master['Cleaned Name']).to_dict()
+    
+    check['Cleaned Name'] = check['Name'].apply(clean_company_name)
+    check['Updated Column B'] = check['Cleaned Name'].apply(lambda x: company_data.get(x, 'Safe'))
 
     return check
 
 def update_check_file_with_master_reg(master, check):
-    # Ensure 'Company Registration Number' columns in both dataframes are strings
-    master['Company Registration Number'] = master['Company Registration Number'].astype(str)
-    check['Company Registration Number'] = check['Company Registration Number'].astype(str)
+    master['Company Registration Number'] = master['Company Registration Number'].fillna('').astype(str)
+    check['Company Registration Number'] = check['Company Registration Number'].fillna('').astype(str)
 
-    # Create a dictionary from the master file with company registration numbers as keys and 'Account Partner' values as values
     company_data = pd.Series(master['Account Partner'].values, index=master['Company Registration Number']).to_dict()
     
-    # Update the check file based on registration number, assigning 'Account Partner' from master or 'Safe' if no match is found
     check['Reg Compare'] = check['Company Registration Number'].apply(lambda x: company_data.get(x, 'Safe'))
 
     return check
 
+def update_check_with_combined_status(check):
+    def combine_status(row):
+        if row['Updated Column B'] == 'Safe' and row['Reg Compare'] == 'Safe':
+            return 'Safe'
+        if row['Updated Column B'] != 'Safe':
+            return row['Updated Column B']
+        if row['Reg Compare'] != 'Safe':
+            return row['Reg Compare']
+        return 'Safe'
+
+    check['Combined Status'] = check.apply(combine_status, axis=1)
+    return check
 
 def main():
     st.title('Telesales Data')
@@ -34,16 +54,18 @@ def main():
     uploaded_check_file = st.file_uploader("Upload Telesales data", key="check", type=['xlsx'])
 
     if uploaded_master_file and uploaded_check_file:
-        master = pd.read_excel(uploaded_master_file, sheet_name=0)  # Assuming data is in the first sheet
-        check = pd.read_excel(uploaded_check_file, sheet_name=0)  # Assuming data is in the first sheet
+        master = pd.read_excel(uploaded_master_file, sheet_name=0)
+        check = pd.read_excel(uploaded_check_file, sheet_name=0)
 
-        # Process the data based on company names
         updated_check = update_check_file_with_master_data(master, check)
-        
-        # Process the data based on company registration numbers
-        updated_check = update_check_file_with_master_reg(master, check)
+        updated_check = update_check_file_with_master_reg(master, updated_check)
 
-        # Display the updated check file
+        updated_check['Company Registration Number'] = updated_check['Company Registration Number'].fillna('').astype(str)
+        updated_check['Reg Compare'] = updated_check['Reg Compare'].fillna('').astype(str)
+        updated_check['Updated Column B'] = updated_check['Updated Column B'].fillna('').astype(str)
+
+        updated_check = update_check_with_combined_status(updated_check)
+
         st.write("Check file after updating with data from the master file:")
         st.dataframe(updated_check)
 
