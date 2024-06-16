@@ -29,10 +29,10 @@ def main():
         # Check if 'company house reg' column exists
         if 'company house reg' in df.columns:
             # Process each company number
-            df['Status'] = df['company house reg'].apply(get_company_status)
+            df['Status'] = df['company reg'].apply(get_company_status)
             st.write(df)
         else:
-            st.error("Excel file does not contain 'company house reg' column.")
+            st.error("Excel file does not contain 'company reg' column.")
 
 if __name__ == "__main__":
     main()
