@@ -27,7 +27,7 @@ def main():
         df = pd.read_excel(uploaded_file)
 
         # Check if 'company house reg' column exists
-        if 'company house reg' in df.columns:
+        if 'company reg' in df.columns:
             # Process each company number
             df['Status'] = df['company reg'].apply(get_company_status)
             st.write(df)
