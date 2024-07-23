@@ -105,7 +105,8 @@ def process_excel(df, api):
 
 # Streamlit User Interface
 st.title("Telesales Data - Dual Check")
-st.write("Please upload the master file and the check file.")
+st.write("Please upload the master file and the check file. Ensure each file has a column 'Name' and 'Company Registration Number'.")
+
 
 uploaded_master_file = st.file_uploader("Upload master data sheet", key="master", type=['xlsx'])
 uploaded_check_file = st.file_uploader("Upload Telesales data", key="check", type=['xlsx'])
