@@ -102,7 +102,7 @@ def process_excel(df, api):
             company_name = row['Name']
             company_number = api.search_company(company_name)
             df.at[index, 'Company Registration Number'] = company_number
-            print("Company check", row['Name']
+            print("Company check", row['Name'])
     return df
 
 # Streamlit User Interface
