@@ -81,11 +81,15 @@ class RateLimitedAPI:
         else:
             return "Error: " + response.reason
 
+
 # Function to get the company status from Companies House API
 def get_company_status(company_number):
     api_key = "eb7007ef-7b53-414c-9d07-b9cef8224a68"  # Use your actual API key
     url = f"https://api.company-information.service.gov.uk/company/{company_number}"
+    
+    # Make the first API request
     response = requests.get(url, auth=(api_key, ''))
+    
     if response.status_code == 200:
         data = response.json()
         # You might need to adjust the key depending on the structure of the response
@@ -93,7 +97,20 @@ def get_company_status(company_number):
         st.write("Company Status Check", company_number)
         return status
     else:
-        return "Failed to fetch data"
+        # If the first attempt fails, try again by adding a 0 at the beginning of the company number
+        st.write(f"Initial check failed for {company_number}, retrying with '0' prefixed.")
+        company_number = '0' + company_number
+        url = f"https://api.company-information.service.gov.uk/company/{company_number}"
+        response = requests.get(url, auth=(api_key, ''))
+        
+        if response.status_code == 200:
+            data = response.json()
+            status = data.get('company_status', 'Status not found')
+            st.write("Company Status Check (after retry)", company_number)
+            return status
+        else:
+            # If the retry also fails, return the failure message
+            return "Failed to fetch data"
 
 def process_excel(df, api):
     df['Company Registration Number'] = df['Company Registration Number'].fillna('')
