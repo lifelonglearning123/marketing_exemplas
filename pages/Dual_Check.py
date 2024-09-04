@@ -90,7 +90,7 @@ def get_company_status(company_number):
         data = response.json()
         # You might need to adjust the key depending on the structure of the response
         status = data.get('company_status', 'Status not found')
-        print("Company Status Check", company_number)
+        st.write("Company Status Check", company_number)
         return status
     else:
         return "Failed to fetch data"
@@ -102,7 +102,7 @@ def process_excel(df, api):
             company_name = row['Name']
             company_number = api.search_company(company_name)
             df.at[index, 'Company Registration Number'] = company_number
-            print("Company check", row['Name'])
+            st.write("Company check", row['Name'])
     return df
 
 # Streamlit User Interface
