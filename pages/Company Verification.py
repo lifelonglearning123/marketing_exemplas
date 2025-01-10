@@ -210,6 +210,9 @@ if authenticate_user():
         # Load files and standardize column names by stripping whitespace
         master = pd.read_excel(uploaded_master_file, sheet_name=0)
         check = pd.read_excel(uploaded_check_file, sheet_name=0)
+        print("print data table")
+        print("check", type(check))
+        print(check.iloc[0])
         
         # Get the actual file names from the uploaded files
         master_file_name = uploaded_master_file.name
@@ -217,8 +220,9 @@ if authenticate_user():
 
         # Verify if the required columns are present in each file using actual file names
         valid_master = verify_required_columns(master, required_master_columns, master_file_name)
+        print("valid master", valid_master)
         valid_check = verify_required_columns(check, required_check_columns, check_file_name)
-        
+        print("valid check", valid_check)
         if valid_master and valid_check:
             api_key = "eb7007ef-7b53-414c-9d07-b9cef8224a68"  # Replace with your Companies House API key
             api = RateLimitedAPI(api_key)

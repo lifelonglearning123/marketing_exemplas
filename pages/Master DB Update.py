@@ -80,7 +80,7 @@ def process_excel(df, df_master, api):
         company_number = api.search_company(company_name)
         df.at[index, 'Company Registration Number'] = company_number
         results.append(company_number)
-        update = company_number + " " + company_name
+        update = f"{company_number if pd.notna(company_number) else 'N/A'} {company_name}"
         st.write(update)
 
     # Append processed data to the master dataframe
@@ -141,8 +141,8 @@ if authenticate_user():
 
     if uploaded_file and uploaded_master_file and st.button('Dedupe'):
         # Load data from uploaded files
-        df_new_accounts = pd.read_excel(uploaded_file)
-        df_master = pd.read_excel(uploaded_master_file)
+        df_new_accounts = pd.read_excel(uploaded_file, engine='openpyxl')
+        df_master = pd.read_excel(uploaded_master_file, engine='openpyxl')  
         
         # Get actual file names
         new_accounts_file_name = uploaded_file.name
